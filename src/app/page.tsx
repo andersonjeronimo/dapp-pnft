@@ -4,7 +4,7 @@ import { ChangeEvent, useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
 //import { Wallet } from "ethers";
-import { login } from "@/services/Web3Service";
+import { login, mint } from "@/services/Web3Service";
 
 export default function Home() {
 
@@ -41,7 +41,21 @@ export default function Home() {
   }
 
   function doMint() {
-    alert(`Mint ${quantity} NFT(s)`);
+    if (!wallet) {
+      setMessage("Must connect to Metamask first");
+    } else {
+      setMessage("Minting...");
+      mint(quantity)
+        .then(tx => {
+          if (tx) {
+            setMessage(`Success! Tx ID = ${tx}`);
+            setQuantity(1);
+          } else {
+            setMessage("Minting was not performed due some error...");
+          }
+        })
+        .catch(err => setMessage(err.message));
+    }
   }
 
   function onQuantityChange(evt: ChangeEvent<HTMLInputElement>) {
@@ -62,7 +76,7 @@ export default function Home() {
               {`${process.env.OPENSEA_URL}/${wallet}`}
             </a>
           </code>
-        </p>        
+        </p>
         <div className={styles.card}>
           <Image
             src="/metamask.svg"
@@ -110,13 +124,13 @@ export default function Home() {
           priority
         />
       </div>
-      <div className={styles.description}>        
+      <div className={styles.description}>
         <p>
           Message:&nbsp;
           <code className={styles.code}>
             {message}
           </code>
-        </p>        
+        </p>
       </div>
     </main>
 
