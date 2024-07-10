@@ -3,11 +3,13 @@
 import { ChangeEvent, useState, useEffect } from "react";
 import Image from "next/image";
 import styles from "./page.module.css";
-import { Wallet } from "ethers";
+//import { Wallet } from "ethers";
+import { login } from "@/services/Web3Service";
 
 export default function Home() {
 
   const [wallet, setWallet] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
 
   async function checkLocalStorage() {
@@ -20,13 +22,20 @@ export default function Home() {
   }, []);
 
   function doLogin() {
-    alert("Login");
-    setWallet("0x123");
-    localStorage.setItem("wallet", "0x123");
+    setMessage("Logging In...");
+    login()
+      .then(wallet => {
+        if (wallet) {
+          setWallet(wallet);
+          localStorage.setItem("wallet", wallet);
+          setMessage("");
+        }
+      })
+      .catch(err => setMessage(err.message));
   }
 
   function doLogout() {
-    alert("Logout");
+    setMessage("Logging Out...")
     setWallet("");
     localStorage.removeItem("wallet");
   }
@@ -53,7 +62,7 @@ export default function Home() {
               {`${process.env.OPENSEA_URL}/${wallet}`}
             </a>
           </code>
-        </p>
+        </p>        
         <div className={styles.card}>
           <Image
             src="/metamask.svg"
@@ -100,6 +109,14 @@ export default function Home() {
           height={37}
           priority
         />
+      </div>
+      <div className={styles.description}>        
+        <p>
+          Message:&nbsp;
+          <code className={styles.code}>
+            {message}
+          </code>
+        </p>        
       </div>
     </main>
 
